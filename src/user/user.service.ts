@@ -14,11 +14,15 @@ export class UserService {
   private userRepo : Repository<User>
 
 
-  async createUser() {}
+  async createUser(createUserDto:CreateUserDto) {}
 
-  async findUserById() {}
+  async findUserById(id:string) {}
 
-  async findUserByEmail() {}
+  async findUserByEmail(email:string) {
+    const user = await this.userRepo.findOneBy({email})
+    if (user) return user
+    throw new HttpException("not found", HttpStatus.NOT_FOUND)
+  }
 
 
 }

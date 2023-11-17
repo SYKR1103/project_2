@@ -1,6 +1,9 @@
 import { BaseEntity } from "src/common/base.entity";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert } from "typeorm";
 import { Role } from "./role.enum";
+import { InternalServerErrorException } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
+
 
 @Entity()
 
@@ -24,6 +27,34 @@ export class User extends BaseEntity{
         default : [Role.USER]
     })
     public roles : Role[]
+
+
+    @BeforeInsert()
+    async hashedPassword() : Promise<void>  {
+        try{
+            const saltValue = await bcrypt.genSalt(10)
+            this.password = await bcrypt.hash(this.password, saltValue)
+
+        } catch(e) 
+        {console.log(e)
+         throw new InternalServerErrorException()
+        }
+    }
+
+    async checkPassword(aPassword: string): Promise<boolean>  {
+
+        try {
+            const isMatched = await bcrypt.compare(aPassword, this.password)
+            return isMatched
+
+        } catch(e) {
+            console.log(e)
+            throw new InternalServerErrorException()
+        }
+
+
+    }
+
 
 
 }
